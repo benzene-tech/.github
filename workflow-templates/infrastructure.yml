@@ -1,0 +1,62 @@
+name: Infrastructure
+
+on:
+  push:
+    branches:
+      - $default-branch
+  pull_request:
+    branches:
+      - $default-branch
+
+concurrency: infrastructure-${{ github.ref }}
+
+jobs:
+  Plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Restore providers
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/.terraform/providers
+          key: terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+
+      - name: Plan
+        uses: benzene-tech/terraform-plan@v1
+        with:
+          working_directory: infra
+          terraform_cloud_token: ${{ secrets.TF_API_TOKEN }}
+
+  Apply:
+    runs-on: ubuntu-latest
+    environment: Infra
+    needs: Plan
+    env:
+      TF_IN_AUTOMATION: "1"
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Restore providers
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/.terraform/providers
+          key: terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+
+      - name: Init
+        run: terraform init
+
+      - name: Apply
+        run: terraform apply -auto-approve -input=false

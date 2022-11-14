@@ -1,0 +1,10 @@
+{
+  "name": "Infrastructure",
+  "description": "Terraform starter workflow.",
+  "categories": [
+    "Deployment"
+  ],
+  "filePatterns": [
+    ".*\\.tf$"
+  ]
+}
