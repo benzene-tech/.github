@@ -1,0 +1,10 @@
+{
+  "name": "Image",
+  "description": "Build and Push image.",
+  "categories": [
+    "Build"
+  ],
+  "filePatterns": [
+    "^Dockerfile.*"
+  ]
+}
